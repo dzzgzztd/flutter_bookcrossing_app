@@ -82,62 +82,69 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (currentUser == null) return const Center(child: Text('Not logged in'));
+    if (currentUser == null) {
+      return const Center(child: Text('Not logged in'));
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
-          onTap:
-              () => Navigator.pushNamed(
-                context,
-                '/user-profile',
-                arguments: widget.otherUserId,
-              ),
-          child: Text('Диалог с $otherUserName'),
+          onTap: () => Navigator.pushNamed(
+            context,
+            '/user-profile',
+            arguments: widget.otherUserId,
+          ),
+          child: Text('Диалог с ${otherUserName ?? widget.otherUserId}'),
         ),
       ),
       body: Column(
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream:
-                  FirebaseFirestore.instance
-                      .collection('chats')
-                      .doc(widget.chatId)
-                      .collection('messages')
-                      .orderBy('timestamp')
-                      .snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('chats')
+                  .doc(widget.chatId)
+                  .collection('messages')
+                  .orderBy('timestamp')
+                  .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const CircularProgressIndicator();
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                final messages = snapshot.data!.docs;
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Ошибка загрузки сообщений'));
+                }
+
+                final messages = snapshot.data?.docs ?? [];
+
+                if (messages.isEmpty) {
+                  return const Center(child: Text('Сообщений пока нет'));
+                }
 
                 return ListView(
                   padding: const EdgeInsets.all(8),
-                  children:
-                      messages.map((doc) {
-                        final data = doc.data() as Map<String, dynamic>;
-                        final isMe = data['senderId'] == currentUser?.uid;
+                  children: messages.map((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final isMe = data['senderId'] == currentUser?.uid;
 
-                        return Align(
-                          alignment:
-                              isMe
-                                  ? Alignment.centerRight
-                                  : Alignment.centerLeft,
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            decoration: BoxDecoration(
-                              color:
-                                  isMe
-                                      ? Colors.deepPurple[100]
-                                      : Colors.grey[300],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(data['text']),
-                          ),
-                        );
-                      }).toList(),
+                    return Align(
+                      alignment: isMe
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isMe
+                              ? Colors.deepPurple[100]
+                              : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(data['text']),
+                      ),
+                    );
+                  }).toList(),
                 );
               },
             ),
@@ -150,7 +157,7 @@ class _ChatPageState extends State<ChatPage> {
                   child: TextField(
                     controller: _controller,
                     decoration: const InputDecoration(
-                      hintText: 'Type a message...',
+                      hintText: 'Введите сообщение...',
                     ),
                   ),
                 ),
