@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "984412147983",
+    "project_id": "bookcrossingapp-98fa3",
+    "storage_bucket": "bookcrossingapp-98fa3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:984412147983:android:6d16874ac08ee157e3ae7a",
+        "android_client_info": {
+          "package_name": "com.example.flutter_bookcrossing_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDN4bR3ZwL_ajif6D1bV1lkvR7PICFrTYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
