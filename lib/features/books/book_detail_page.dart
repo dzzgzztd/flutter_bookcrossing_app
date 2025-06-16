@@ -36,17 +36,15 @@ class BookDetailPage extends StatelessWidget {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final otherUserId = book.ownerId;
 
-    final query =
-        await FirebaseFirestore.instance
-            .collection('chats')
-            .where('participants', arrayContains: currentUserId)
-            .get();
+    final query = await FirebaseFirestore.instance
+        .collection('chats')
+        .where('participants', arrayContains: currentUserId)
+        .get();
 
-    final matchingChats =
-        query.docs.where((doc) {
-          final participants = List<String>.from(doc['participants']);
-          return participants.contains(otherUserId);
-        }).toList();
+    final matchingChats = query.docs.where((doc) {
+      final participants = List<String>.from(doc['participants']);
+      return participants.contains(otherUserId);
+    }).toList();
 
     String chatId;
 
@@ -70,6 +68,22 @@ class BookDetailPage extends StatelessWidget {
     }
   }
 
+  void _openImageFull(BuildContext context, String imageUrl) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(backgroundColor: Colors.black),
+          body: Center(
+            child: InteractiveViewer(
+              child: Image.network(imageUrl),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isGivenAway = !book.isAvailable;
@@ -77,15 +91,14 @@ class BookDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(book.title),
-        actions:
-            isOwner
-                ? [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _editBook(context),
-                  ),
-                ]
-                : null,
+        actions: isOwner
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => _editBook(context),
+                ),
+              ]
+            : null,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -93,11 +106,17 @@ class BookDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (book.imageUrl != null)
-              Image.network(
-                book.imageUrl!,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
+              GestureDetector(
+                onTap: () => _openImageFull(context, book.imageUrl!),
+                child: Hero(
+                  tag: book.imageUrl!,
+                  child: Image.network(
+                    book.imageUrl!,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             const SizedBox(height: 16),
             Text(book.title, style: Theme.of(context).textTheme.headlineSmall),
@@ -109,29 +128,28 @@ class BookDetailPage extends StatelessWidget {
             const SizedBox(height: 16),
             Text('Genre: ${book.genre}'),
             Text('Condition: ${book.condition}'),
+            Text('City: ${book.city}'),
             const SizedBox(height: 16),
             Text(book.description),
           ],
         ),
       ),
-      bottomNavigationBar:
-          (!isGivenAway)
-              ? Padding(
-                padding: const EdgeInsets.all(16),
-                child:
-                    isOwner
-                        ? ElevatedButton.icon(
-                          onPressed: () => _markAsGiven(context),
-                          icon: const Icon(Icons.check),
-                          label: const Text('Я отдал(а) книгу'),
-                        )
-                        : ElevatedButton.icon(
-                          onPressed: () => _messageOwner(context),
-                          icon: const Icon(Icons.message),
-                          label: const Text('Написать владельцу'),
-                        ),
-              )
-              : null,
+      bottomNavigationBar: (!isGivenAway)
+          ? Padding(
+              padding: const EdgeInsets.all(16),
+              child: isOwner
+                  ? ElevatedButton.icon(
+                      onPressed: () => _markAsGiven(context),
+                      icon: const Icon(Icons.check),
+                      label: const Text('Я отдал(а) книгу'),
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: () => _messageOwner(context),
+                      icon: const Icon(Icons.message),
+                      label: const Text('Написать владельцу'),
+                    ),
+            )
+          : null,
     );
   }
 }

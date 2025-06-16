@@ -13,6 +13,7 @@ class BookModel {
   final double? latitude;
   final double? longitude;
   final bool isAvailable;
+  final String? city;
 
   BookModel({
     required this.id,
@@ -27,6 +28,7 @@ class BookModel {
     this.latitude,
     this.longitude,
     this.isAvailable = true,
+    this.city,
   });
 
   factory BookModel.fromJson(Map<String, dynamic> json) {
@@ -43,6 +45,7 @@ class BookModel {
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       isAvailable: json['isAvailable'] ?? true,
+      city: json['city'] ?? '',
     );
   }
 
@@ -67,6 +70,7 @@ class BookModel {
       'latitude': latitude,
       'longitude': longitude,
       'isAvailable': isAvailable,
+      'city': city
     };
   }
 
@@ -80,6 +84,7 @@ class BookModel {
     double? latitude,
     double? longitude,
     bool? isAvailable,
+    String? city
   }) {
     return BookModel(
       id: id,
@@ -94,6 +99,7 @@ class BookModel {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isAvailable: isAvailable ?? this.isAvailable,
+      city: city ?? this.city,
     );
   }
 }

@@ -12,6 +12,14 @@ class BookListPage extends StatefulWidget {
 
 class _BookListPageState extends State<BookListPage> {
   late Future<List<BookModel>> _booksFuture;
+  String _selectedCity = 'Москва';
+  final List<String> _cities = [
+    'Москва',
+    'Санкт-Петербург',
+    'Новосибирск',
+    'Екатеринбург',
+    'Россия',
+  ];
   String _searchQuery = '';
   final int _selectedIndex = 0;
 
@@ -51,21 +59,48 @@ class _BookListPageState extends State<BookListPage> {
       appBar: AppBar(
         title: const Text('All Books'),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search by title or author...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+          preferredSize: const Size.fromHeight(104),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: TextField(
+                  decoration: const InputDecoration(
+                    hintText: 'Search by title or author...',
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value.toLowerCase();
+                    });
+                  },
+                ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.toLowerCase();
-                });
-              },
-            ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
+                child: DropdownButtonFormField<String>(
+                  value: _selectedCity,
+                  items: _cities
+                      .map((city) => DropdownMenuItem(
+                            value: city,
+                            child: Text(city),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedCity = value;
+                      });
+                    }
+                  },
+                  decoration: const InputDecoration(
+                    labelText: 'Город',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -86,13 +121,15 @@ class _BookListPageState extends State<BookListPage> {
           var books = snapshot.data ?? [];
 
           books = books.where((book) {
+            final matchesCity = book.city == 'Россия' || book.city == _selectedCity;
+
             final query = _searchQuery.trim();
-            if (query.isEmpty) return true;
+            if (query.isEmpty) return matchesCity;
 
             final titleScore = book.title.similarityTo(query);
             final authorScore = book.author.similarityTo(query);
 
-            return titleScore > 0.3 || authorScore > 0.3;
+            return matchesCity && (titleScore > 0.3 || authorScore > 0.3);
           }).toList();
 
           if (books.isEmpty) {
@@ -115,7 +152,7 @@ class _BookListPageState extends State<BookListPage> {
                         )
                       : const Icon(Icons.book),
                   title: Text(book.title),
-                  subtitle: Text(book.author),
+                  subtitle: Text('${book.author} — ${book.city}'),
                   onTap: () => Navigator.pushNamed(
                     context,
                     '/book',
@@ -131,18 +168,9 @@ class _BookListPageState extends State<BookListPage> {
         currentIndex: _selectedIndex,
         onTap: _onTabTapped,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Books',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: 'Chats',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Books'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );

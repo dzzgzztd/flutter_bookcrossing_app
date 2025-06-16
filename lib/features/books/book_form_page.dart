@@ -26,8 +26,16 @@ class _BookFormPageState extends State<BookFormPage> {
   final _titleController = TextEditingController();
   final _authorController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final List<String> _cities = [
+    'Москва',
+    'Санкт-Петербург',
+    'Новосибирск',
+    'Екатеринбург',
+    'Россия',
+  ];
   String _genre = 'Fiction';
   String _condition = 'Good';
+  String _city = 'Россия';
   File? _image;
   String? _existingImageUrl;
 
@@ -42,6 +50,7 @@ class _BookFormPageState extends State<BookFormPage> {
       _genre = book.genre;
       _condition = book.condition;
       _existingImageUrl = book.imageUrl;
+      _city = book.city ?? 'Россия';
     }
   }
 
@@ -73,6 +82,7 @@ class _BookFormPageState extends State<BookFormPage> {
               description: _descriptionController.text,
               imageUrl: imageUrl,
               isAvailable: widget.bookToEdit!.isAvailable,
+              city: _city,
             )
             : BookModel(
               id: UniqueKey().toString(),
@@ -85,6 +95,7 @@ class _BookFormPageState extends State<BookFormPage> {
               condition: _condition,
               createdAt: DateTime.now(),
               isAvailable: true,
+              city: _city,
             );
 
     if (widget.bookToEdit != null) {
@@ -130,6 +141,17 @@ class _BookFormPageState extends State<BookFormPage> {
                   controller: _descriptionController,
                   decoration: const InputDecoration(labelText: 'Description'),
                   maxLines: 4,
+                ),
+                DropdownButtonFormField<String>(
+                  value: _city,
+                  items:
+                      _cities
+                          .map(
+                            (c) => DropdownMenuItem(value: c, child: Text(c)),
+                          )
+                          .toList(),
+                  onChanged: (value) => setState(() => _city = value!),
+                  decoration: const InputDecoration(labelText: 'Город'),
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
